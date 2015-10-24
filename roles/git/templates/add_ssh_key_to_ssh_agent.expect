@@ -1,0 +1,9 @@
+#!/usr/bin/expect
+
+spawn ssh-add
+
+expect "Enter passphrase"
+send "{{ accounts.bbc.ssh_key_passphrase }}"
+send "\r"
+
+expect eof

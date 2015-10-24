@@ -1,0 +1,39 @@
+---
+
+- homebrew: name=git
+
+- template:
+    src: .gitconfig
+    dest: ~/.gitconfig
+
+# See issue https://github.com/ansible/ansible-modules-core/issues/2221
+# - name: Generate ssh keys
+#   user:
+#     name: "{{ accounts.bbc.username }}"
+#     generate_ssh_key: yes
+#     ssh_key_bits: 4096
+#     ssh_key_passphrase: "{{ accounts.bbc.ssh_key_passphrase }}"
+#     ssh_key_comment: "{{ accounts.bbc.email }}"
+
+- name: Generate ssh keys
+  command: "ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa -P {{ accounts.bbc.ssh_key_passphrase }} -C '{{ accounts.bbc.email }}' creates=~/.ssh/id_rsa"
+
+- name: Run ssh agent confirmer
+  command: ssh-add -L
+  register: ssh_agent_key_confirmer
+  ignore_errors: yes
+
+- name: Copy ssh-agent script
+  template: src=add_ssh_key_to_ssh_agent.expect dest=/tmp/add_ssh_key_to_ssh_agent.expect mode=755
+
+- name: Add ssh key to the ssh-agent
+  command: ./add_ssh_key_to_ssh_agent.expect
+  args:
+    chdir: /tmp
+  when: "ssh_agent_key_confirmer.stdout.find('{{ accounts.bbc.username }}') == -1"
+
+- pause:
+    prompt: "\nEnsure your ssh public key has been added to your Github account.\nSee https://help.github.com/articles/generating-ssh-keys/#step-4-add-your-ssh-key-to-your-account\n\nPress any key to continue"
+
+- name: Install Github's Octokit gem
+  gem: name=octokit
