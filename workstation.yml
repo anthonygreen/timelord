@@ -2,3 +2,4 @@
 
   roles:
     - base
+    - ruby

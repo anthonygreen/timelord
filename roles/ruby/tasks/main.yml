@@ -1,0 +1,15 @@
+---
+
+- name: Install rbenv
+  homebrew:
+    name: "{{ item }}"
+  with_items:
+    - ruby-build
+    - rbenv
+
+- name: Install rubies
+  command: rbenv install 2.2.3
+  args:
+    creates: ~/.rbenv/versions/2.2.3
+
+- command: rbenv global 2.2.3
