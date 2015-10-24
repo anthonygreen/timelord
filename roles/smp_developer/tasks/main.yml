@@ -1,0 +1,29 @@
+---
+
+- homebrew_cask:
+    name: "{{ item }}"
+  with_items:
+    - flash
+    - flash-player-debugger
+
+- name: Replace
+  copy: src=../scripts/flash_player_locator.sh dest=/tmp/flash_player_locator.sh mode=0755
+
+- shell: ./flash_player_locator.sh
+  register: flash_player_locator
+  args:
+    chdir: /tmp
+
+- command: brew cask install flash-player-debugger flash
+  when: flash_player_locator.stdout.find('flash-player') == -1
+
+- set_fact:
+    flash_player_location: "{{ flash_player_locator.stdout }}"
+  when: flash_player_locator.stdout.find('flash-player') != -1
+
+- replace:
+    dest: ~/.m2/settings.xml
+    regexp: '<properties>([^<]*)</properties>'
+    replace: '<properties>\1<flash.player.location>{{ flash_player_location }}</flash.player.location></properties>'
+
+- homebrew_cask: name=charles

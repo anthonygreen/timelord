@@ -7,4 +7,4 @@
     - secrets.yml
 
   roles:
-    - bbc_developer
+    - smp_developer
