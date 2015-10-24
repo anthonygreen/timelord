@@ -1,0 +1,11 @@
+#!/usr/bin/expect -f
+
+set timeout -1
+
+spawn sh ./build.sh
+
+expect -re "Your CERTIFICATE PASSWORD" { send "{{ accounts.bbc.developer_certificate.password }}\r" }
+
+expect -re "Successfully built"
+
+expect eof

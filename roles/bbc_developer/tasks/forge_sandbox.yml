@@ -1,0 +1,50 @@
+---
+
+- file: path=~/Projects state=directory
+
+- file: path=~/Workspace state=directory
+
+- command: "cp {{ path_to_developer_certificate }} ~/Workspace/dev.bbc.co.uk.p12"
+  args:
+    creates: ~/Workspace/dev.bbc.co.uk.p12
+
+- git: repo=git@github.com:bbc/forge-sandbox-docker.git dest=~/Projects/forge-sandbox-docker
+
+- template:
+    src: add_forge_greenhouse_certificate_to_forge_sandbox_docker_container.expect
+    dest: ~/Projects/forge-sandbox-docker/
+
+- name: Collate the list of pulled docker images
+  command: docker images
+  register: docker_images_collater
+
+- shell: expect ./add_forge_greenhouse_certificate_to_forge_sandbox_docker_container.expect
+  args:
+    chdir: ~/Projects/forge-sandbox-docker
+  when: docker_images_collater.stdout.find('forge/sandbox') == -1
+
+- name: Start sandbox container
+  docker:
+    name: forge_sandbox
+    image: forge/sandbox
+    state: started
+    volumes:
+      - $HOME/workspace:/mnt/hgfs/workspace
+    expose:
+      - 80
+    ports:
+      - "80:80"
+    tty: yes
+    use_tls: encrypt
+
+- command: docker-machine ip default
+  register: forge_sandbox_ip_detector
+
+- set_fact:
+    forge_sandbox_ip_address: "{{ forge_sandbox_ip_detector.stdout }}"
+  when: forge_sandbox_ip_detector.stdout.find('192.168') != -1
+
+- lineinfile:
+    dest: /etc/hosts
+    line: "{{ forge_sandbox_ip_address }} pal.sandbox.dev.bbc.co.uk static.sandbox.dev.bbc.co.uk"
+  sudo: yes

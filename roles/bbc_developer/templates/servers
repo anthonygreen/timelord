@@ -1,0 +1,15 @@
+[groups]
+greenhouse = repo.dev.bbc.co.uk
+repoav = repoav.dev.bbc.co.uk
+
+[greenhouse]
+ssl-client-cert-file={{ path_to_developer_certificate }}
+ssl-client-cert-password={{ accounts.bbc.developer_certificate.password }}
+
+[repoav]
+ssl-client-cert-file={{ path_to_developer_certificate }}
+ssl-client-cert-password={{ accounts.bbc.developer_certificate.password }}
+
+[global]
+http-proxy-host = www-cache.reith.bbc.co.uk
+http-proxy-port = 80

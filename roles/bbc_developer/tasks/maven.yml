@@ -1,0 +1,22 @@
+---
+
+- homebrew_cask: name=java
+
+- command: /usr/libexec/java_home
+  register: java_home_locator
+
+- set_fact:
+    JAVA_HOME: "{{ java_home_locator.stdout }}"
+    trustStore: "{{ java_home_locator.stdout }}/jre/lib/security/jssecacerts"
+  when: java_home_locator.stdout.find('Java') != -1
+
+- homebrew: name=mvnvm
+
+- get_url: "url=http://ca.dev.bbc.co.uk/jssecacerts dest={{ trustStore }}"
+  sudo: yes
+
+- file: dest=~/.m2 state=directory
+
+- template: src=settings.xml dest=~/.m2/settings.xml
+
+- template: src=.mavenrc dest=~/.mavenrc

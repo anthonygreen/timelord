@@ -1,5 +1,10 @@
 - hosts: workstation
 
+  vars:
+    name: Anthony Green
+
+  vars_files:
+    - secrets.yml
+
   roles:
-    - base
-    - ruby
+    - bbc_developer

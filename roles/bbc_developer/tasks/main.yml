@@ -1,0 +1,25 @@
+---
+
+- set_fact:
+    path_to_developer_certificate: "/Users/{{ accounts.bbc.username }}/.ssl/forge_greenhouse_developer_certificate.p12"
+
+- file: dest=~/.ssl state=directory
+
+- name: Copy base 64 encoded developer certificate
+  copy:
+    content: "{{ accounts.bbc.developer_certificate.content }}"
+    dest: "{{ path_to_developer_certificate }}.b64"
+
+- name: Unpack developer certificate
+  shell: "base64 --decode {{ path_to_developer_certificate }}.b64 > {{ path_to_developer_certificate }}"
+  args:
+    creates: "{{ path_to_developer_certificate }}"
+    chdir: ~/.ssl
+
+- file:
+    path: "{{ path_to_developer_certificate }}.b64"
+    state: absent
+
+- include: maven.yml
+- include: subversion.yml
+- include: forge_sandbox.yml
