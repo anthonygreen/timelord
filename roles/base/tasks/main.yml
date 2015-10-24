@@ -1,0 +1,27 @@
+---
+
+- file: path=~/.bashrc state=touch
+
+- copy: src=.bash_profile dest=~/.bash_profile
+
+- lineinfile: dest=~/.bashrc line='export PATH=$HOME/bin:/usr/local/bin:$PATH'
+
+- shell: source ~/.bashrc
+
+- homebrew: name={{ item }}
+  with_items:
+    - caskroom/cask/brew-cask
+    - openssl
+    - curl
+    - wget
+
+- homebrew_tap: tap=caskroom/versions
+
+- file:
+    path: /usr/local
+    owner: "{{ accounts.bbc.username }}"
+    state: directory
+    recurse: yes
+  sudo: yes
+
+- homebrew: update_homebrew=yes upgrade_all=yes
