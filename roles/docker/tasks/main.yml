@@ -1,0 +1,16 @@
+---
+
+- homebrew_cask: name={{ item }}
+  with_items:
+    - virtualbox
+    - docker-machine
+
+- command: docker-machine create --driver virtualbox default
+  args:
+    creates: ~/.docker/machine/machines/default
+
+- lineinfile:
+    dest: ~/.bashrc
+    line: eval "$(docker-machine env default)"
+
+- shell: source ~/.bashrc
