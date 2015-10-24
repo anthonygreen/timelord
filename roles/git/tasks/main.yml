@@ -33,7 +33,7 @@
   when: "ssh_agent_key_confirmer.stdout.find('{{ accounts.bbc.username }}') == -1"
 
 - pause:
-    prompt: "\nEnsure your ssh public key has been added to your Github account.\nSee https://help.github.com/articles/generating-ssh-keys/#step-4-add-your-ssh-key-to-your-account\n\nPress any key to continue"
+    prompt: "\nEnsure your ssh public key has been added to your Github account.\nSee https://help.github.com/articles/generating-ssh-keys/#step-4-add-your-ssh-key-to-your-account\n\nPress return to continue"
 
 - name: Install Github's Octokit gem
   gem: name=octokit
