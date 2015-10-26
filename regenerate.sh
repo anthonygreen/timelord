@@ -21,6 +21,40 @@ while true; do
   esac
 done
 
+function generate_secrets_file
+{
+
+  read -e -p "Enter your BBC email address: " BBC_EMAIL_ADDRESS
+
+  read -e -p "Enter your BBC login id: " BBC_LOGIN_ID
+
+  read -e -p "Enter the full path to a Forge developer certificate:" FORGE_CERTIFICATE_FILEPATH
+
+  read -s -e -p "Enter your Forge certificate password: " FORGE_CERTIFICATE_PASSWORD
+
+  if [[ ! -x $FORGE_CERTIFICATE_FILEPATH ]]; then
+    FORGE_CERTIFICATE_B64=$(base64 -i $FORGE_CERTIFICATE_FILEPATH)
+  fi
+
+  if [[ ! -x ./secrets.yml ]]; then
+    cat > ./secrets.yml <<- _EOF_
+---
+
+accounts:
+  bbc:
+    username: $BBC_LOGIN_ID
+    email: $BBC_EMAIL_ADDRESS
+    developer_certificate:
+      password: $FORGE_CERTIFICATE_PASSWORD
+      content:
+        base64_encoded: $FORGE_CERTIFICATE_B64
+_EOF_
+  fi
+
+  ansible-vault encrypt ./secrets2.yml
+
+}
+
 if [[ ! -x /usr/bin/gcc ]]; then
   echo "Installing Command Line Tools"
   xcode-select --install
@@ -57,3 +91,15 @@ if [[ ! -x /usr/local/bin/ansible ]]; then
   echo "Installing Ansible"
   brew install ansible
 fi
+
+while true; do
+  read -p "Do you wish to generate an encrypted secrets file? " yn
+    case $yn in
+      [Yy]* ) $(generate_secrets_file); break;;
+      [Nn]* ) break;;
+      * ) echo "Please answer yes or no.";;
+  esac
+done
+
+echo "Running Ansible"
+ansible-playbook workstation.yml
